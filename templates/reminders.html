@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="display-6"><i class="bi bi-alarm"></i> Manage Reminders</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">Set New Reminder</div>
+            <div class="card-body p-4">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.medicine_id.label(class="form-label") }}
+                        {% if form.medicine_id.errors %}
+                            {{ form.medicine_id(class="form-select is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.medicine_id.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.medicine_id(class="form-select") }}
+                        {% endif %}
+                        <small id="medicine-timing-info" class="form-text text-primary fw-bold mt-2 d-block"></small>
+                    </div>
+                    {{ render_field(form.time) }}
+                    <div class="mb-3">
+                        {{ form.days.label(class="form-label mb-2") }}
+                        <div class="d-flex flex-wrap {% if form.days.errors %}is-invalid{% endif %}" style="gap: 0.5rem 1rem;">
+                            {% for subfield in form.days %}
+                            <div class="form-check">
+                                {{ subfield(class="form-check-input") }}
+                                {{ subfield.label(class="form-check-label") }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.days.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.days.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {{ render_field(form.note) }}
+                    <div class="mt-4">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <h3>Your Scheduled Medicine Reminders</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-light"><tr><th>Time</th><th>Medicine</th><th>Days</th><th>Note</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for reminder in medicine_reminders %}
+                    <tr>
+                        <td class="align-middle"><span class="badge bg-primary fs-6">{{ reminder.time }}</span></td>
+                        <td class="align-middle">{{ reminder.name }}</td>
+                        <td class="align-middle">{{ reminder.days }}</td>
+                        <td class="align-middle">{{ reminder.note }}</td>
+                        <td class="align-middle">
+                            <form action="{{ url_for('delete_reminder', rem_id=reminder.id) }}" method="POST">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center p-4"><h5>No medicine reminders found.</h5><p>Set your first reminder using the form.</p></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const medicineSelect = document.getElementById('medicine_id');
+        const timingInfo = document.getElementById('medicine-timing-info');
+        const medicinesData = JSON.parse('{{ medicines_data | tojson | safe }}');
+        function updateTimingInfo() {
+            const selectedId = medicineSelect.value;
+            if (selectedId && medicinesData[selectedId]) {
+                const med = medicinesData[selectedId];
+                timingInfo.textContent = `Instruction: Take ${med.timing} ${med.meal}.`;
+            } else {
+                timingInfo.textContent = '';
+            }
+        }
+        medicineSelect.addEventListener('change', updateTimingInfo);
+        updateTimingInfo();
+    });
+</script>
+{% endblock %}

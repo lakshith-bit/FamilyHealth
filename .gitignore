@@ -1,0 +1,13 @@
+# Virtual Environment
+venv/
+__pycache__/
+
+# Database file
+healthcare.db
+
+# IDE / Editor specific files
+.idea/
+.vscode/
+
+# OS specific files
+.DS_Store

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="display-6"><i class="bi bi-capsule-pill"></i> Add a New Medicine</h1>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    {{ render_field(form.name) }}
+                    {{ render_field(form.current_stock) }}
+                    {{ render_field(form.meal_timing) }}
+                    {{ render_field(form.meal_type) }}
+                    {{ render_field(form.reason) }}
+                    <div class="mt-4">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('medicines') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

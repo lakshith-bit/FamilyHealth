@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="display-6"><i class="bi bi-qr-code-scan"></i> Share Your Health Record</h1>
+</div>
+
+<div class="row justify-content-center text-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-5">
+                <h4 class="card-title">Show this to your Doctor</h4>
+                <p class="text-muted">Your doctor can scan this QR code to get a temporary, read-only view of your medical profile, history, and emergency contacts.</p>
+                
+                <img src="data:image/png;base64,{{ qr_image_data }}" alt="QR Code" class="img-fluid my-4" style="max-width: 300px;">
+                
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>For your security, this code will automatically expire in 15 minutes.</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

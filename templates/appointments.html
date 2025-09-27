@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="display-6"><i class="bi bi-calendar2-check"></i> Manage Appointments</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">Schedule New Appointment</div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    {{ render_field(form.doctor_name) }}
+                    {{ render_field(form.hospital) }}
+                    {{ render_field(form.date_time) }}
+                    {{ render_field(form.purpose) }}
+                    {{ render_field(form.reminder_minutes_before) }}
+                    {{ form.submit(class="btn btn-primary") }}
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <h3>Your Appointments</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-light"><tr><th>Date & Time</th><th>Doctor</th><th>Purpose</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for appt in appointments %}
+                    <tr>
+                        <td class="align-middle">{{ appt.date_time | datetime_indian }}</td>
+                        <td class="align-middle">{{ appt.doctor_name }} <small class="text-muted d-block">{{ appt.hospital }}</small></td>
+                        <td class="align-middle">{{ appt.purpose }}</td>
+                        <td class="align-middle">
+                            <form action="{{ url_for('delete_appointment', apt_id=appt.id) }}" method="POST">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center p-4"><h5>No appointments scheduled.</h5></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,371 @@
+/* --- Custom Theme Variables (Elderly-Friendly & Attractive) --- */
+:root {
+    --primary-color: #3CB371; /* Medium Sea Green - Calm & Trustworthy */
+    --primary-hover: #2E8B57; /* Darker Green for hover */
+    --secondary-color: #6A5ACD; /* Slate Blue - for accents */
+    --background-color: #F8F9FA; /* Light Grey/Off-white for background */
+    --card-background: #FFFFFF; /* White for cards */
+    --border-color: #E0E0E0; /* Light border */
+    --text-color-dark: #333333; /* Darker text for readability */
+    --text-color-light: #6C757D; /* Muted text */
+    --success-color: #28A745;
+    --warning-color: #FFC107;
+    --danger-color: #DC3545;
+    --info-color: #17A2B8;
+
+    --font-family-base: 'Roboto', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-size-base: 1.1rem; /* Slightly larger base font */
+    --font-size-large: 1.35rem; /* For headings and key figures */
+    --font-size-xl: 2.2rem; /* For very important numbers */
+    --line-height-base: 1.6; /* Improved line spacing for readability */
+}
+
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    color: var(--text-color-dark);
+    background-color: var(--background-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-color-dark);
+    font-weight: 600;
+}
+
+/* --- Navbar Polish --- */
+.navbar-custom {
+    background-color: var(--card-background);
+    border-bottom: 1px solid var(--border-color);
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+.navbar-custom .navbar-brand {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: var(--font-size-large);
+    display: flex;
+    align-items: center;
+}
+.navbar-custom .navbar-brand .bi {
+    font-size: 1.6rem;
+    margin-right: 0.5rem;
+}
+.navbar-custom .nav-link {
+    color: var(--text-color-dark);
+    font-weight: 500;
+    font-size: var(--font-size-base);
+    padding: 0.5rem 1rem;
+}
+.navbar-custom .nav-link:hover {
+    color: var(--primary-color);
+}
+
+/* --- Polished Cards --- */
+.card {
+    border: none;
+    border-radius: 1rem; /* Slightly more rounded */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* Stronger, softer shadow */
+    transition: all 0.3s ease-in-out;
+    background-color: var(--card-background);
+}
+.card:hover {
+    transform: translateY(-8px); /* More pronounced lift on hover */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+.card-header {
+    background-color: var(--card-background);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 700;
+    font-size: var(--font-size-large);
+    padding: 1rem 1.5rem;
+    color: var(--primary-color); /* Header text in primary color */
+    display: flex;
+    align-items: center;
+}
+.card-header .bi {
+    margin-right: 0.75rem;
+}
+
+/* --- Button Styles --- */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-size: var(--font-size-base);
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+.btn-outline-secondary {
+    border-color: var(--text-color-light);
+    color: var(--text-color-light);
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-size: var(--font-size-base);
+}
+.btn-outline-secondary:hover {
+    background-color: var(--text-color-light);
+    color: var(--card-background);
+}
+
+/* --- Welcome Page Style --- */
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    background-color: var(--background-color);
+}
+.welcome-box {
+    background-color: var(--card-background);
+    padding: 4rem 5rem;
+    border-radius: 1.5rem;
+    max-width: 650px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+.welcome-box .icon {
+    font-size: 3.5rem;
+    color: var(--card-background);
+    background-color: var(--primary-color);
+    width: 90px;
+    height: 90px;
+    border-radius: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+.welcome-box h1 {
+    font-weight: 800;
+    font-size: 3rem;
+    color: var(--text-color-dark);
+    margin-bottom: 1.5rem;
+}
+.welcome-box .lead {
+    font-size: 1.25rem;
+    color: var(--text-color-light);
+}
+.welcome-box .quote-box {
+    background-color: var(--light-green-bg); /* Needs a variable */
+    padding: 2rem;
+    border-radius: 1rem;
+    margin: 2rem 0;
+    color: var(--text-color-dark);
+}
+.welcome-box .quote-box h4 {
+    font-weight: 500;
+    font-size: 1.5rem;
+}
+
+/* --- Dashboard Specific Styles --- */
+.dashboard-banner {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); /* Attractive gradient */
+    color: #fff;
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+.dashboard-banner h4 {
+    font-weight: 500;
+    font-size: var(--font-size-large);
+    color: #fff;
+}
+.dashboard-banner p {
+    font-size: var(--font-size-base);
+    color: rgba(255, 255, 255, 0.9);
+}
+.health-score {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.15); /* Semi-transparent background */
+    border-radius: 1rem;
+    padding: 1rem;
+}
+.health-score .score-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    opacity: 0.9;
+}
+.health-score .score {
+    font-size: var(--font-size-xl); /* Very large for visibility */
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+}
+
+.dashboard-widget .card-body {
+    text-align: center;
+    padding: 2rem;
+}
+.dashboard-widget .card-title {
+    font-size: 1.1rem;
+    color: var(--text-color-light);
+    margin-bottom: 0.5rem;
+}
+.dashboard-widget .card-value {
+    font-size: var(--font-size-xl);
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+.dashboard-widget .card-subtext {
+    font-size: 0.9rem;
+    color: var(--text-color-light);
+}
+
+.quick-action-link {
+    display: flex; /* Use flex for icon and text alignment */
+    align-items: center;
+    padding: 1.1rem 1.5rem; /* Larger padding */
+    background-color: #F0F2F5; /* A subtle contrasting background */
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: var(--text-color-dark);
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 0.75rem; /* Space between links */
+}
+.quick-action-link:hover {
+    background-color: #E2E4E8;
+    color: var(--primary-color);
+    transform: translateX(5px);
+}
+.quick-action-link .bi {
+    font-size: 1.5rem; /* Larger icons */
+    margin-right: 1rem;
+    color: var(--primary-color); /* Icons in primary color */
+}
+
+.list-group-item {
+    padding: 1rem 1.5rem; /* Larger padding for list items */
+    font-size: var(--font-size-base);
+    color: var(--text-color-dark);
+}
+.list-group-item .fw-bold {
+    font-weight: 700 !important;
+}
+.list-group-item small {
+    font-size: 0.9rem;
+    color: var(--text-color-light);
+}
+.list-group-item:first-child { border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
+.list-group-item:last-child { border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; }
+.list-group-item-action:hover {
+    background-color: #F5F5F5;
+    color: var(--primary-color);
+}
+.list-group-item-action .badge {
+    font-size: 0.85rem; /* Adjust badge size */
+    padding: 0.5em 0.75em;
+    border-radius: 0.5rem;
+}
+
+/* Specific colors for status badges */
+.badge.bg-primary { background-color: var(--primary-color) !important; }
+.badge.bg-info { background-color: var(--info-color) !important; }
+.badge.bg-danger { background-color: var(--danger-color) !important; }
+.badge.bg-warning { background-color: var(--warning-color) !important; }
+.badge.bg-success { background-color: var(--success-color) !important; }
+
+/* Custom light green background variable for welcome page quote box */
+.welcome-box .quote-box {
+    background-color: #e8f8f5; /* Re-added for the welcome box */
+}
+/* --- Action Required Banner Styles (from screenshot) --- */
+.action-required-banner {
+    background-color: #f8d7da; /* Light red background */
+    border: 1px solid #f5c2c7;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+}
+
+.action-required-banner h5 {
+    color: #842029; /* Dark red text for title */
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.action-item {
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.action-item:last-child {
+    margin-bottom: 0;
+}
+
+.action-item .name {
+    font-weight: 600;
+    color: #343a40;
+}
+
+.action-item .time-badge {
+    background-color: #dc3545; /* Red badge background */
+    color: #fff;
+    padding: 0.25em 0.6em;
+    font-size: 0.9em;
+    border-radius: 0.25rem;
+    margin-left: 0.75rem;
+}
+
+.action-item .btn-mark-taken {
+    background-color: #198754; /* Green button */
+    color: #fff;
+    border: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.action-item .btn-mark-taken:hover {
+    background-color: #157347; /* Darker green on hover */
+}
+/* Add this new block to the end of style.css */
+.recent-activity-header {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--light-text-color);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+}
+
+.recent-activity-list {
+    max-height: 250px; /* Sets the maximum height before scrolling */
+    overflow-y: auto;   /* Adds a scrollbar only when needed */
+}
+
+.activity-item {
+    padding: 0.6rem 0.2rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.activity-item p {
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}

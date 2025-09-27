@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="display-6"><i class="bi bi-person-badge"></i> Edit Profile: {{ profile.profile_name }}</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-4 text-center">
+        <img src="{{ url_for('uploaded_file', profile_id=profile.id, filename=profile.profile_picture if profile.profile_picture else 'default.png') }}" 
+             class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" alt="Profile Picture" 
+             onerror="this.onerror=null;this.src='https://via.placeholder.com/150';">
+        <h4>{{ profile.profile_name }}</h4>
+        {% if profile.is_manager %}
+        <p class="text-muted">{{ current_user.email }}</p>
+        {% endif %}
+        <a href="{{url_for('emergency')}}" class="btn btn-outline-danger mb-3"><i class="bi bi-heart-pulse"></i> Emergency Contacts</a>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">Profile Information</div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    {{ render_field(form.profile_name) }}
+                    {{ render_field(form.date_of_birth) }}
+                    {{ render_field(form.gender) }}
+                    {{ render_field(form.profile_picture) }}
+                    <button type="submit" name="submit_profile" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </div>
+
+        {% if profile.is_manager %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">Change Password</div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ password_form.hidden_tag() }}
+                        {{ render_field(password_form.current_password) }}
+                        {{ render_field(password_form.new_password) }}
+                        {{ render_field(password_form.confirm_new_password) }}
+                        <button type="submit" name="submit_password" class="btn btn-warning">Change Password</button>
+                    </form>
+                </div>
+            </div>
+    
+            <div class="card shadow-sm border-danger mb-4">
+                <div class="card-header bg-danger text-white">Account Management</div>
+                <div class="card-body">
+                     <p>Securely share this profile, export all data, or permanently delete your entire account.</p>
+                     <a href="{{ url_for('generate_qr') }}" class="btn btn-success"><i class="bi bi-qr-code-scan"></i> Share Profile (QR)</a>
+                     <a href="{{ url_for('export_data') }}" class="btn btn-info">Export All Data</a>
+                     <form method="POST" action="{{ url_for('delete_account') }}" onsubmit="return confirm('Are you sure you want to permanently delete your account and ALL associated profiles? This action cannot be undone.');" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Delete Entire Account</button>
+                     </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

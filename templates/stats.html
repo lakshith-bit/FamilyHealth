@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="display-6"><i class="bi bi-graph-up"></i> Your Health Stats</h1>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <i class="bi bi-check2-circle me-2"></i>Daily Adherence Rate (Last 7 Days)
+    </div>
+    <div class="card-body">
+        {% if adherence_data %}
+            <div class="table-responsive">
+                <table class="table table-borderless table-sm text-center">
+                    <tbody>
+                        <tr>
+                        {% for entry in adherence_data|reverse %}
+                            <td style="vertical-align: bottom;">
+                                <div class="progress" style="height: 200px; width: 50px; margin: auto;" role="progressbar">
+                                    <div class="progress-bar" style="height: {{ entry.percentage }}%;">
+                                        <span class="visually-hidden">{{ entry.percentage }}%</span>
+                                    </div>
+                                </div>
+                            </td>
+                        {% endfor %}
+                        </tr>
+                        <tr class="table-group-divider">
+                        {% for entry in adherence_data|reverse %}
+                            <th scope="col" class="fw-normal">
+                                <small>{{ entry.date.split('-')[2] }}/{{ entry.date.split('-')[1] }}</small>
+                            </th>
+                        {% endfor %}
+                        </tr>
+                        <tr>
+                        {% for entry in adherence_data|reverse %}
+                            <th scope="col">{{ entry.percentage }}%</th>
+                        {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center">Not enough data to display adherence stats. Start logging your medicine intake!</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-warning">
+                <i class="bi bi-skip-forward-circle me-2"></i>Missed Doses Today
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for dose in missed_doses %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        {{ dose.name }} 
+                        <span class="badge bg-secondary">{{ dose.time }}</span>
+                    </li>
+                {% else %}
+                    <li class="list-group-item text-muted">No missed doses today. Great job!</li>
+                {% endfor %} {# <-- FIX #1: Was {% endif %} #}
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-stopwatch me-2"></i>Today's Intake Log
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for log in intake_log %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        {{ log.name }}
+                        <span class="badge bg-secondary">{{ log.taken_at | datetime_indian }}</span>
+                    </li>
+                {% else %}
+                    <li class="list-group-item text-muted">No medicines logged as taken yet today.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
