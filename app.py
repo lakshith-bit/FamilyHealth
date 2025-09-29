@@ -18,11 +18,14 @@ app = Flask(__name__)
 
 # ADD THIS ENTIRE BLOCK OF CODE RIGHT HERE
 # --- Custom Jinja Filter for Indian Date/Time ---
-# REPLACE this entire function
-def format_datetime_indian(value, format_str='%d-%m-%Y %I:%M %p'):
-    if value is None: return ""
+from datetime import datetime, timedelta, timezone
 
-    # This function now correctly converts UTC time from the database to IST
+# In app.py, find and replace the existing format_datetime_indian function with this one.
+def format_datetime_indian(value, format_str='%d-%m-%Y %I:%M %p'):
+    if value is None:
+        return ""
+
+    # This function correctly converts UTC time from the database to IST
     if isinstance(value, str):
         try:
             # Handle ISO format strings from the database
@@ -30,7 +33,7 @@ def format_datetime_indian(value, format_str='%d-%m-%Y %I:%M %p'):
         except (ValueError, TypeError):
              return value
 
-    # Assume the naive datetime from DB is UTC
+    # Assume the naive datetime from the DB is UTC
     if value.tzinfo is None:
         value = value.replace(tzinfo=timezone.utc)
 
@@ -39,10 +42,23 @@ def format_datetime_indian(value, format_str='%d-%m-%Y %I:%M %p'):
     value_in_ist = value.astimezone(ist_tz)
 
     return value_in_ist.strftime(format_str)
+# ADD THIS NEW FUNCTION to app.py
+def format_time_indian(value, format_str='%I:%M %p'):
+    if value is None:
+        return ""
+    try:
+        # Tries to parse a time string like '14:30'
+        return datetime.strptime(value, '%H:%M').strftime(format_str)
+    except ValueError:
+        # If it fails, just return the original value
+        return value
 
+# ADD THIS LINE to register the new filter
+app.jinja_env.filters['time_indian'] = format_time_indian
+
+
+# Make sure this line is also present after the function definition
 app.jinja_env.filters['datetime_indian'] = format_datetime_indian
-
-
 app.config['SECRET_KEY'] = 'a_very_secret_key_that_should_be_changed'
 app.config['DATABASE'] = 'healthcare.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
