@@ -161,6 +161,8 @@ def log_activity(activity_type, description):
 
 # In app.py, REPLACE the existing calculate_and_save_adherence function with this one.
 
+# In app.py, REPLACE the existing function with this corrected version.
+
 def calculate_and_save_adherence(profile_id):
     """
     Calculates adherence based on doses taken within a +/- 15-minute window
@@ -199,7 +201,8 @@ def calculate_and_save_adherence(profile_id):
     ).fetchall()
     
     # Create a mutable list of intakes to "use up" as we match them
-    unmatched_intakes = [{'med_id': row['medicine_id'], 'time': row['taken_at'].astimezone(ist_tz)} for row in intake_rows]
+    # THIS IS THE CORRECTED LINE:
+    unmatched_intakes = [{'med_id': row['medicine_id'], 'time': row['taken_at'].replace(tzinfo=timezone.utc).astimezone(ist_tz)} for row in intake_rows]
     
     # 3. Match intakes to reminders to find the Numerator
     doses_taken_on_time = 0
@@ -229,7 +232,7 @@ def calculate_and_save_adherence(profile_id):
     db.commit()
     
     return adherence_percent
-  
+
 
 # --- Routes ---
 @app.route('/')
