@@ -811,7 +811,8 @@ def my_account():
         flash("Main account profile not found.", "danger")
         return redirect(url_for('profiles'))
     
-# ADD this new route to app.py
+# In app.py, UPDATE the intake_log function's query
+
 @app.route('/intake_log')
 @login_required
 def intake_log():
@@ -823,14 +824,38 @@ def intake_log():
     db = get_db()
     
     log_entries = db.execute("""
-        SELECT m.name, i.taken_at 
+        SELECT i.id, m.name, i.taken_at 
         FROM medicine_intake i JOIN medicines m ON i.medicine_id = m.id 
         WHERE i.profile_id = ? 
         ORDER BY i.taken_at DESC
     """, (profile_id,)).fetchall()
     return render_template('intake_log.html', log_entries=log_entries)
 
+# ADD THIS NEW ROUTE to app.py
 
+@app.route('/intake/delete/<int:log_id>', methods=['POST'])
+@login_required
+def delete_intake_log(log_id):
+    profile_id = session.get('active_profile_id')
+    if not profile_id:
+        return redirect(url_for('profiles'))
+
+    db = get_db()
+    # Ensure the log entry belongs to the active profile before deleting
+    log_entry = db.execute(
+        'SELECT id FROM medicine_intake WHERE id = ? AND profile_id = ?',
+        (log_id, profile_id)
+    ).fetchone()
+
+    if log_entry:
+        db.execute('DELETE FROM medicine_intake WHERE id = ?', (log_id,))
+        db.commit()
+        flash('Medication intake record has been deleted.', 'success')
+    else:
+        flash('Record not found or access denied.', 'danger')
+
+    return redirect(url_for('intake_log'))
+  
 if __name__ == '__main__':
     app.run(debug=True)
     
