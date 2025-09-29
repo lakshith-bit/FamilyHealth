@@ -369,3 +369,9 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 0.25rem;
     font-size: 0.95rem;
 }
+/* --- Day Selector Toggle Buttons --- */
+#day-selector .day-btn {
+    width: calc(100% / 7 - 0.5rem); /* Makes 7 buttons fit neatly */
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
