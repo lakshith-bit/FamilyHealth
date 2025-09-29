@@ -159,54 +159,77 @@ def log_activity(activity_type, description):
 
 # In app.py, replace the existing function with this one:
 
-def calculate_and_save_adherence(profile_id, intake_date=None):
+# In app.py, REPLACE the existing calculate_and_save_adherence function with this one.
+
+def calculate_and_save_adherence(profile_id):
     """
-    Calculates adherence based on the formula:
-    (Number of intakes) / (Number of missed + Number of intakes) * 100
+    Calculates adherence based on doses taken within a +/- 15-minute window
+    of their scheduled reminder time.
     """
-    if not profile_id: return 100
+    if not profile_id:
+        return 100
 
     db = get_db()
-    now = datetime.now()
-    today_name = now.strftime('%a')
-    current_time_str = now.strftime('%H:%M')
-    today_date_str = now.strftime('%Y-%m-%d')
+    ist_tz = timezone(timedelta(hours=5, minutes=30))
+    now_ist = datetime.now(ist_tz)
+    today_name = now_ist.strftime('%a')
+    current_time_str = now_ist.strftime('%H:%M')
+    today_date_str = now_ist.strftime('%Y-%m-%d')
 
-    # 1. Get the set of medicine IDs for all reminders due today up to the current time
+    # 1. Get all reminders due today up to the current time (This is the Denominator)
     due_reminders_rows = db.execute(
-        "SELECT medicine_id FROM reminders WHERE profile_id = ? AND days LIKE ? AND time <= ?",
+        "SELECT medicine_id, time FROM reminders WHERE profile_id = ? AND days LIKE ? AND time <= ?",
         (profile_id, f'%{today_name}%', current_time_str)
     ).fetchall()
-    due_reminders_set = {row['medicine_id'] for row in due_reminders_rows}
+    
+    total_doses_due = len(due_reminders_rows)
 
-    # 2. Get the set of distinct medicine IDs logged as taken today
+    if total_doses_due == 0:
+        # If no doses were due yet, adherence is 100%
+        db.execute("INSERT OR REPLACE INTO adherence (profile_id, date, percentage) VALUES (?, ?, ?)",
+                   (profile_id, today_date_str, 100))
+        db.commit()
+        return 100
+
+    # 2. Get all intake records for today to check against
+    start_of_day_ist = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)
     intake_rows = db.execute(
-        "SELECT DISTINCT medicine_id FROM medicine_intake WHERE profile_id = ? AND DATE(taken_at) = DATE('now', 'localtime')",
-        (profile_id,)
+        "SELECT medicine_id, taken_at FROM medicine_intake WHERE profile_id = ? AND taken_at >= ?",
+        (profile_id, start_of_day_ist)
     ).fetchall()
-    intake_set = {row['medicine_id'] for row in intake_rows}
-
-    # 3. Calculate the components of the formula
-    # num_intake: Medicines that were due AND were taken
-    num_intake = len(due_reminders_set.intersection(intake_set))
     
-    # num_missed: Medicines that were due but were NOT taken
-    num_missed = len(due_reminders_set.difference(intake_set))
-
-    denominator = num_intake + num_missed
+    # Create a mutable list of intakes to "use up" as we match them
+    unmatched_intakes = [{'med_id': row['medicine_id'], 'time': row['taken_at'].astimezone(ist_tz)} for row in intake_rows]
     
-    if denominator == 0:
-        # If no reminders were due yet, adherence is 100%
-        adherence_percent = 100
-    else:
-        adherence_percent = round((num_intake / denominator) * 100)
+    # 3. Match intakes to reminders to find the Numerator
+    doses_taken_on_time = 0
+    window = timedelta(minutes=15)
 
-    # 4. Save the result to the database, which will update the stats page graph
+    for rem in due_reminders_rows:
+        rem_med_id = rem['medicine_id']
+        rem_time_obj = datetime.strptime(rem['time'], '%H:%M').time()
+        rem_datetime = now_ist.replace(hour=rem_time_obj.hour, minute=rem_time_obj.minute, second=0, microsecond=0)
+        
+        # Find the first matching, unmatched intake that is within the window
+        for i, intake in enumerate(unmatched_intakes):
+            if intake['med_id'] == rem_med_id:
+                if abs(intake['time'] - rem_datetime) <= window:
+                    doses_taken_on_time += 1
+                    # Remove the matched intake so it can't be counted again
+                    unmatched_intakes.pop(i)
+                    # Move to the next reminder
+                    break 
+
+    # 4. Calculate the final percentage
+    adherence_percent = round((doses_taken_on_time / total_doses_due) * 100)
+
+    # 5. Save the result and return it
     db.execute("INSERT OR REPLACE INTO adherence (profile_id, date, percentage) VALUES (?, ?, ?)",
                (profile_id, today_date_str, adherence_percent))
     db.commit()
-
+    
     return adherence_percent
+  
 
 # --- Routes ---
 @app.route('/')
