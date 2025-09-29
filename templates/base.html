@@ -76,7 +76,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Request notification permission as soon as the page loads
         if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
             Notification.requestPermission();
         }
@@ -84,35 +83,28 @@
         const reminderDataEl = document.getElementById('reminder-data');
         const takenTodayEl = document.getElementById('taken-today-data');
 
-        // Exit if the necessary data elements are not on the page
         if (!reminderDataEl || !takenTodayEl) return;
 
         try {
             const reminders = JSON.parse(reminderDataEl.textContent || '[]');
-            const takenTodayIds = JSON.parse(takenTodayEl.textContent || '[]');
-            const takenTodaySet = new Set(takenTodayIds);
-            const notifiedTimes = new Set(); // Keep track of notifications sent this session
-            
-            // We use UTC for all comparisons to be independent of the client's timezone
+            const takenTodaySet = new Set(JSON.parse(takenTodayEl.textContent || '[]'));
+            const notifiedTimes = new Set();
             let lastCheckedTime = new Date();
+            
+            // --- DEBUG --- Log initial data
+            console.log('Reminder script loaded. Total reminders for today:', reminders.length);
 
             function checkReminders() {
-                const now = new Date(); // Current moment in time (internally UTC)
+                const now = new Date();
                 
                 reminders.forEach(reminder => {
-                    // Reminder time (e.g., "14:30") is assumed to be in IST.
-                    // We convert it to UTC for a reliable comparison.
                     const [hourIST, minuteIST] = reminder.time.split(':').map(Number);
-                    
-                    // Create a date object for today in UTC
                     const reminderTimeUTC = new Date();
                     reminderTimeUTC.setUTCFullYear(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
                     
-                    // Convert IST time to UTC time (IST is UTC+5:30)
                     let hourUTC = hourIST - 5;
                     let minuteUTC = minuteIST - 30;
 
-                    // Adjust for borrowing from the hour/day
                     if (minuteUTC < 0) {
                         minuteUTC += 60;
                         hourUTC -= 1;
@@ -123,11 +115,21 @@
                     
                     reminderTimeUTC.setUTCHours(hourUTC, minuteUTC, 0, 0);
 
-                    // Now compare the reminder's UTC time with the current UTC time
+                    const uniqueId = reminder.name + reminder.time;
+                    if (!notifiedTimes.has(uniqueId)) {
+                        // --- DEBUG --- Log the comparison for each reminder
+                        console.log(
+                            `Checking: ${reminder.name} at ${reminder.time} IST.`,
+                            `Current Time (UTC): ${now.toISOString()}`,
+                            `Reminder Time (UTC): ${reminderTimeUTC.toISOString()}`,
+                            `Should fire? ${reminderTimeUTC > lastCheckedTime && reminderTimeUTC <= now}`
+                        );
+                    }
+                    
                     if (reminderTimeUTC > lastCheckedTime && reminderTimeUTC <= now) {
-                        const uniqueId = reminder.name + reminder.time;
-
                         if (!takenTodaySet.has(reminder.id) && !notifiedTimes.has(uniqueId)) {
+                            // --- DEBUG --- Log when a notification is being sent
+                            console.warn(`NOTIFICATION FIRING for ${reminder.name}`);
                             showNotification(reminder.name, reminder.time);
                             notifiedTimes.add(uniqueId);
                         }
@@ -138,26 +140,17 @@
             }
 
             function showNotification(medicineName, medicineTimeIST) {
-                if (!("Notification" in window) || Notification.permission !== "granted") {
-                    return;
-                }
-                
-                // We use the new time formatter to show 12-hour format in the notification
+                if (!("Notification" in window) || Notification.permission !== "granted") return;
                 const time12hr = new Date('1970-01-01T' + medicineTimeIST + 'Z').toLocaleTimeString('en-US', {timeZone:'UTC', hour: '2-digit', minute:'2-digit', hour12: true });
-
-                const options = {
-                    body: `It's time to take your ${medicineName} (scheduled for ${time12hr}).`,
-                    icon: "https://cdn-icons-png.flaticon.com/512/3022/3022827.png" 
-                };
+                const options = { body: `It's time to take your ${medicineName} (scheduled for ${time12hr}).`, icon: "https://cdn-icons-png.flaticon.com/512/3022/3022827.png" };
                 new Notification("Medication Reminder", options);
             }
             
-            // Run the check every 30 seconds
             setInterval(checkReminders, 30000);
-            checkReminders(); // Run once on page load
+            checkReminders();
 
         } catch (e) {
-            console.error("Error parsing reminder data:", e);
+            console.error("Error in reminder script:", e);
         }
     });
 </script>
