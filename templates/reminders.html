@@ -58,7 +58,7 @@
                 <tbody>
                     {% for reminder in medicine_reminders %}
                     <tr>
-                        <td class="align-middle"><span class="badge bg-primary fs-6">{{ reminder.time }}</span></td>
+                        <td class="align-middle"><span class="badge bg-primary fs-6">{{ reminder.time | time_indian }}</span></td>
                         <td class="align-middle">{{ reminder.name }}</td>
                         <td class="align-middle">{{ reminder.days }}</td>
                         <td class="align-middle">{{ reminder.note }}</td>
