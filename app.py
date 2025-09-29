@@ -522,9 +522,12 @@ def dashboard():
 
     db = get_db()
     today_name = datetime.now().strftime('%a')
-    current_time = datetime.now()
-    
-    # NEW: Find reminders due within a +/- 15 minute window of now
+
+    # Define IST timezone and get the current time in IST
+    ist_tz = timezone(timedelta(hours=5, minutes=30))
+    current_time_ist = datetime.now(ist_tz)
+
+    # Find reminders due within a +/- 15 minute window of the current IST time
     due_now_reminders = []
     all_today_reminders = db.execute("""
         SELECT r.time, m.name, m.id as medicine_id FROM reminders r
@@ -534,38 +537,53 @@ def dashboard():
     """, (profile_id, f'%{today_name}%', profile_id)).fetchall()
 
     for rem in all_today_reminders:
+        # Create a timezone-aware datetime object for the reminder in IST
         reminder_time = datetime.strptime(rem['time'], '%H:%M').time()
-        reminder_datetime = datetime.combine(current_time.date(), reminder_time)
-        time_diff = abs(current_time - reminder_datetime)
+        reminder_datetime_ist = datetime.combine(current_time_ist.date(), reminder_time).replace(tzinfo=ist_tz)
+        
+        # Compare the two timezone-aware datetime objects
+        time_diff = abs(current_time_ist - reminder_datetime_ist)
         if time_diff <= timedelta(minutes=15):
             due_now_reminders.append(rem)
 
-    upcoming_reminders = db.execute("SELECT r.time, m.name, m.id as medicine_id FROM reminders r JOIN medicines m ON r.medicine_id = m.id WHERE r.profile_id = ? AND r.time > ? AND r.days LIKE ? AND m.id NOT IN (SELECT medicine_id FROM medicine_intake WHERE profile_id = ? AND DATE(taken_at) = DATE('now', 'localtime')) ORDER BY r.time ASC LIMIT 5", (profile_id, current_time.strftime('%H:%M'), f'%{today_name}%', profile_id)).fetchall()
-    low_stock_count = db.execute('SELECT COUNT(id) FROM medicines WHERE profile_id = ? AND current_stock <= 6', (profile_id,)).fetchone()[0]
+    # Correctly query for upcoming reminders using IST current time
+    upcoming_reminders = db.execute("""
+        SELECT r.time, m.name, m.id as medicine_id FROM reminders r
+        JOIN medicines m ON r.medicine_id = m.id
+        WHERE r.profile_id = ? AND r.time > ? AND r.days LIKE ?
+        AND m.id NOT IN (SELECT medicine_id FROM medicine_intake WHERE profile_id = ? AND DATE(taken_at) = DATE('now', 'localtime'))
+        ORDER BY r.time ASC LIMIT 5
+    """, (profile_id, current_time_ist.strftime('%H:%M'), f'%{today_name}%', profile_id)).fetchall()
+    
+    low_stock_count = db.execute('SELECT COUNT(id) FROM medicines WHERE profile_id = ? AND current_stock <= 10', (profile_id,)).fetchone()[0]
     meds_taken_today = db.execute("SELECT COUNT(id) FROM medicine_intake WHERE profile_id = ? AND DATE(taken_at) = DATE('now', 'localtime')", (profile_id,)).fetchone()[0]
     health_records_count = db.execute("SELECT COUNT(id) FROM medical_history WHERE profile_id = ?", (profile_id,)).fetchone()[0]
     emergency_contacts_count = db.execute("SELECT COUNT(id) FROM emergency_contacts WHERE profile_id = ?", (profile_id,)).fetchone()[0]
-    activities = db.execute('SELECT description, timestamp FROM recent_activities WHERE profile_id = ? ORDER BY timestamp DESC LIMIT 5', (profile_id,)).fetchall()
+    activities = db.execute("""
+        SELECT description, timestamp, activity_type
+        FROM recent_activities
+        WHERE profile_id = ? AND activity_type IN ('medicine_take', 'add_medicine', 'add_history', 'profile_update')
+        ORDER BY timestamp DESC LIMIT 7
+    """, (profile_id,)).fetchall()
+    
     adherence = calculate_and_save_adherence(profile_id)
-
-        # ADD THESE LINES to app.py inside the dashboard function
+    
     upcoming_appointments = db.execute(
         "SELECT * FROM appointments WHERE profile_id = ? AND date_time > ? ORDER BY date_time ASC",
         (profile_id, datetime.now())
     ).fetchall()
     
-    # UPDATE the return statement in the dashboard function to include the new variable
     return render_template('dashboard.html', 
                         adherence=adherence,
                         upcoming_reminders=upcoming_reminders,
                         due_now_reminders=due_now_reminders,
-                        upcoming_appointments=upcoming_appointments, # <-- ADD THIS LINE
+                        upcoming_appointments=upcoming_appointments,
                         low_stock_count=low_stock_count,
                         meds_taken_today=meds_taken_today,
                         health_records_count=health_records_count,
                         emergency_contacts_count=emergency_contacts_count,
                         activities=activities)
-":?"
+  
 @app.route('/medicine/take/<int:med_id>', methods=['POST'])
 @login_required
 def take_medicine(med_id):
