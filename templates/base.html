@@ -90,27 +90,43 @@
         try {
             const reminders = JSON.parse(reminderDataEl.textContent || '[]');
             const takenTodayIds = JSON.parse(takenTodayEl.textContent || '[]');
-            
-            // Use a Set for faster lookups of taken medicine IDs
             const takenTodaySet = new Set(takenTodayIds);
             const notifiedTimes = new Set(); // Keep track of notifications sent this session
-
-            // Store the time of the last check to avoid re-notifying
-            let lastCheckedTime = new Date();
             
+            // We use UTC for all comparisons to be independent of the client's timezone
+            let lastCheckedTime = new Date();
+
             function checkReminders() {
-                const now = new Date();
+                const now = new Date(); // Current moment in time (internally UTC)
                 
                 reminders.forEach(reminder => {
-                    const [hour, minute] = reminder.time.split(':');
-                    const reminderTime = new Date();
-                    reminderTime.setHours(parseInt(hour, 10), parseInt(minute, 10), 0, 0);
+                    // Reminder time (e.g., "14:30") is assumed to be in IST.
+                    // We convert it to UTC for a reliable comparison.
+                    const [hourIST, minuteIST] = reminder.time.split(':').map(Number);
+                    
+                    // Create a date object for today in UTC
+                    const reminderTimeUTC = new Date();
+                    reminderTimeUTC.setUTCFullYear(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+                    
+                    // Convert IST time to UTC time (IST is UTC+5:30)
+                    let hourUTC = hourIST - 5;
+                    let minuteUTC = minuteIST - 30;
 
-                    // Check if the reminder time is between the last check and now
-                    if (reminderTime > lastCheckedTime && reminderTime <= now) {
+                    // Adjust for borrowing from the hour/day
+                    if (minuteUTC < 0) {
+                        minuteUTC += 60;
+                        hourUTC -= 1;
+                    }
+                    if (hourUTC < 0) {
+                        hourUTC += 24;
+                    }
+                    
+                    reminderTimeUTC.setUTCHours(hourUTC, minuteUTC, 0, 0);
+
+                    // Now compare the reminder's UTC time with the current UTC time
+                    if (reminderTimeUTC > lastCheckedTime && reminderTimeUTC <= now) {
                         const uniqueId = reminder.name + reminder.time;
 
-                        // Check if medicine has not been taken and not already notified
                         if (!takenTodaySet.has(reminder.id) && !notifiedTimes.has(uniqueId)) {
                             showNotification(reminder.name, reminder.time);
                             notifiedTimes.add(uniqueId);
@@ -118,28 +134,27 @@
                     }
                 });
 
-                // Update the last checked time for the next interval
                 lastCheckedTime = now;
             }
 
-            function showNotification(medicineName, medicineTime) {
-                if (!("Notification" in window)) {
-                    console.error("This browser does not support desktop notification.");
+            function showNotification(medicineName, medicineTimeIST) {
+                if (!("Notification" in window) || Notification.permission !== "granted") {
                     return;
                 }
+                
+                // We use the new time formatter to show 12-hour format in the notification
+                const time12hr = new Date('1970-01-01T' + medicineTimeIST + 'Z').toLocaleTimeString('en-US', {timeZone:'UTC', hour: '2-digit', minute:'2-digit', hour12: true });
 
-                if (Notification.permission === "granted") {
-                    const options = {
-                        body: `It's time to take your ${medicineName} (scheduled for ${medicineTime}).`,
-                        icon: "https://cdn-icons-png.flaticon.com/512/3022/3022827.png" // Generic icon
-                    };
-                    new Notification("Medication Reminder", options);
-                }
+                const options = {
+                    body: `It's time to take your ${medicineName} (scheduled for ${time12hr}).`,
+                    icon: "https://cdn-icons-png.flaticon.com/512/3022/3022827.png" 
+                };
+                new Notification("Medication Reminder", options);
             }
             
-            // Run the check every 30 seconds to catch any due reminders
+            // Run the check every 30 seconds
             setInterval(checkReminders, 30000);
-            checkReminders(); // Run once on load
+            checkReminders(); // Run once on page load
 
         } catch (e) {
             console.error("Error parsing reminder data:", e);
