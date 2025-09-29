@@ -525,7 +525,7 @@ def dashboard():
             due_now_reminders.append(rem)
 
     upcoming_reminders = db.execute("SELECT r.time, m.name, m.id as medicine_id FROM reminders r JOIN medicines m ON r.medicine_id = m.id WHERE r.profile_id = ? AND r.time > ? AND r.days LIKE ? AND m.id NOT IN (SELECT medicine_id FROM medicine_intake WHERE profile_id = ? AND DATE(taken_at) = DATE('now', 'localtime')) ORDER BY r.time ASC LIMIT 5", (profile_id, current_time.strftime('%H:%M'), f'%{today_name}%', profile_id)).fetchall()
-    low_stock_count = db.execute('SELECT COUNT(id) FROM medicines WHERE profile_id = ? AND current_stock <= 10', (profile_id,)).fetchone()[0]
+    low_stock_count = db.execute('SELECT COUNT(id) FROM medicines WHERE profile_id = ? AND current_stock <= 6', (profile_id,)).fetchone()[0]
     meds_taken_today = db.execute("SELECT COUNT(id) FROM medicine_intake WHERE profile_id = ? AND DATE(taken_at) = DATE('now', 'localtime')", (profile_id,)).fetchone()[0]
     health_records_count = db.execute("SELECT COUNT(id) FROM medical_history WHERE profile_id = ?", (profile_id,)).fetchone()[0]
     emergency_contacts_count = db.execute("SELECT COUNT(id) FROM emergency_contacts WHERE profile_id = ?", (profile_id,)).fetchone()[0]
