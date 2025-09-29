@@ -16,17 +16,24 @@
                     <tr>
                         <th>Medicine Name</th>
                         <th>Time Taken</th>
-                    </tr>
+                        <th>Actions</th> </tr>
                 </thead>
                 <tbody>
                     {% for entry in log_entries %}
                     <tr>
                         <td>{{ entry.name }}</td>
                         <td>{{ entry.taken_at | datetime_indian }}</td>
+                        <td>
+                            <form action="{{ url_for('delete_intake_log', log_id=entry.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this record?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="2" class="text-center p-4">
+                        <td colspan="3" class="text-center p-4">
                             <p class="text-muted mb-0">No medication intake has been logged for this profile yet.</p>
                         </td>
                     </tr>
