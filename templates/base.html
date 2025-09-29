@@ -29,6 +29,7 @@
                                     <li><a class="dropdown-item {% if profile.id == active_profile.id %}active{% endif %}" href="{{ url_for('switch_profile', profile_id=profile.id) }}">{{ profile.profile_name }}</a></li>
                                 {% endfor %}
                                 <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('manager_dashboard') }}"><i class="bi bi-grid-fill me-2"></i>Family Overview</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('profiles') }}"><i class="bi bi-gear-fill me-2"></i>Manage Profiles</a></li>
                             </ul>
                         </li>
