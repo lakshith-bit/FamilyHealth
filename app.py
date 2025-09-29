@@ -873,6 +873,64 @@ def delete_intake_log(log_id):
         flash('Record not found or access denied.', 'danger')
 
     return redirect(url_for('intake_log'))
+
+# ADD THIS ENTIRE NEW ROUTE to app.py
+
+@app.route('/manager-dashboard')
+@login_required
+def manager_dashboard():
+    db = get_db()
+    today_name = datetime.now().strftime('%a')
+
+    # Get current time in IST for accurate comparisons
+    ist_tz = timezone(timedelta(hours=5, minutes=30))
+    current_time_ist = datetime.now(ist_tz)
+    current_time_str = current_time_ist.strftime('%H:%M')
+
+    # Query for all upcoming doses for all profiles
+    all_upcoming_doses = db.execute("""
+        SELECT p.profile_name, m.name, r.time
+        FROM reminders r
+        JOIN medicines m ON r.medicine_id = m.id
+        JOIN profiles p ON r.profile_id = p.id
+        WHERE p.manager_user_id = ? AND r.days LIKE ? AND r.time > ?
+        ORDER BY r.time ASC, p.profile_name ASC
+    """, (current_user.id, f'%{today_name}%', current_time_str)).fetchall()
+
+    # Query for all upcoming appointments
+    all_appointments = db.execute("""
+        SELECT p.profile_name, a.doctor_name, a.date_time
+        FROM appointments a
+        JOIN profiles p ON a.profile_id = p.id
+        WHERE p.manager_user_id = ? AND a.date_time > ?
+        ORDER BY a.date_time ASC
+    """, (current_user.id, datetime.now())).fetchall()
+
+    # Query for all low stock medicines (threshold is 5 or less)
+    low_stock_medicines = db.execute("""
+        SELECT p.profile_name, m.name, m.current_stock
+        FROM medicines m
+        JOIN profiles p ON m.profile_id = p.id
+        WHERE p.manager_user_id = ? AND m.current_stock <= 5
+        ORDER BY m.current_stock ASC
+    """, (current_user.id,)).fetchall()
+
+    # Query for recent activity across all profiles
+    recent_activities = db.execute("""
+        SELECT p.profile_name, ra.description, ra.timestamp, ra.activity_type
+        FROM recent_activities ra
+        JOIN profiles p ON ra.profile_id = p.id
+        WHERE p.manager_user_id = ? AND ra.activity_type IN ('medicine_take', 'add_medicine', 'add_history', 'profile_update')
+        ORDER BY ra.timestamp DESC
+        LIMIT 15
+    """, (current_user.id,)).fetchall()
+    
+    return render_template('manager_dashboard.html',
+                           all_upcoming_doses=all_upcoming_doses,
+                           all_appointments=all_appointments,
+                           low_stock_medicines=low_stock_medicines,
+                           recent_activities=recent_activities)
+  
   
 if __name__ == '__main__':
     app.run(debug=True)
