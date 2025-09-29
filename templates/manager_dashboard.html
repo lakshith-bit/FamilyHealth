@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="display-6"><i class="bi bi-grid-fill"></i> Family Overview</h1>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">Upcoming Doses Today (All Members)</div>
+            <ul class="list-group list-group-flush">
+                {% for dose in all_upcoming_doses %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold">{{ dose.name }}</span> for <span class="badge bg-info text-dark">{{ dose.profile_name }}</span>
+                    </div>
+                    <span class="badge bg-primary rounded-pill">{{ dose.time | time_indian }}</span>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No more doses scheduled for today.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header">Upcoming Appointments (All Members)</div>
+            <ul class="list-group list-group-flush">
+                {% for appt in all_appointments %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold">{{ appt.doctor_name }}</span> for <span class="badge bg-info text-dark">{{ appt.profile_name }}</span>
+                        </div>
+                        <small class="text-muted">{{ appt.date_time | datetime_indian }}</small>
+                    </div>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No upcoming appointments.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">Low Medicine Stock (All Members)</div>
+            <ul class="list-group list-group-flush">
+                {% for med in low_stock_medicines %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ med.name }} ({{ med.profile_name }})
+                    <span class="badge bg-danger rounded-pill">Stock: {{ med.current_stock }}</span>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">All medicine stocks are sufficient.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header">Recent Family Activity</div>
+            <div class="card-body recent-activity-list" style="max-height: 300px; overflow-y: auto;">
+                {% for activity in recent_activities %}
+                <div class="d-flex align-items-start activity-item pb-2 mb-2">
+                    <div class="activity-icon me-3">
+                        {% if activity.activity_type == 'medicine_take' %}<i class="bi bi-check2-circle text-success fs-4"></i>
+                        {% elif activity.activity_type == 'add_medicine' %}<i class="bi bi-capsule-pill text-primary fs-4"></i>
+                        {% elif activity.activity_type == 'add_history' %}<i class="bi bi-file-medical text-warning fs-4"></i>
+                        {% elif activity.activity_type == 'profile_update' %}<i class="bi bi-person-fill text-info fs-4"></i>
+                        {% else %}<i class="bi bi-info-circle text-muted fs-4"></i>{% endif %}
+                    </div>
+                    <div>
+                        <p class="mb-0">
+                            <span class="badge bg-secondary">{{ activity.profile_name }}</span>
+                            {{ activity.description }}
+                        </p>
+                        <small class="text-muted">{{ activity.timestamp | datetime_indian }}</small>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-muted p-3">No important activity to show.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
